@@ -1,0 +1,9 @@
+fastapi
+uvicorn[standard]
+plotly
+psycopg2
+numpy
+pandas
+sqlalchemy
+matplotlib
+

@@ -1,0 +1,71 @@
+# Access via "http://localhost:8080"
+#   (or "http://$(docker-machine ip):8080" if using docker-machine)
+#
+# During initial Drupal setup,
+# Database type: PostgreSQL
+# Database name: postgres
+# Database username: postgres
+# Database password: example
+# ADVANCED OPTIONS; Database host: postgres
+
+version: '3.1'
+
+volumes:
+  drupal-data:
+  postgres-data:
+
+services:
+
+  postgres:
+    container_name: DAP_postgres
+    build:
+      context: .
+      dockerfile: services/postgres/Dockerfile
+    environment:
+      POSTGRES_USER: prjo
+      POSTGRES_PASSWORD: prjo
+      POSTGRES_DB: prjo_dap_v2
+    volumes:
+      - postgres-data:/var/lib/postgresql/data/
+    restart: always
+
+  drupal:
+    container_name: DAP_drupal
+    depends_on:
+      - postgres
+    build:
+      context: .
+      dockerfile: services/drupal/Dockerfile
+    ports:
+      - 8080:80
+    volumes:
+      - drupal-data:/var/www/html
+      # - d8all:/opt/drupal
+    restart: always
+
+  pgadmin4:
+    image: dpage/pgadmin4
+    container_name: DAP_pgadmin4
+    ports:
+      - '5050:80'
+    environment:
+      PGADMIN_DEFAULT_EMAIL: pisewip@gmail.com
+      PGADMIN_DEFAULT_PASSWORD: admin
+    # links:
+    #   - postgis
+    restart: always
+
+  fastapi:
+    container_name: DAP_fastapi
+    depends_on:
+      - postgres
+    build:
+      context: .
+      dockerfile: services/fastapi/Dockerfile
+    command: uvicorn app.main:app --host 0.0.0.0
+    # volumes:
+    #   - .:/app
+    ports:
+      - 8008:8000
+    # environment:
+    #   - DATABASE_URL=postgresql://fastapi_traefik:fastapi_traefik@db:5432/fastapi_traefik
