@@ -14,10 +14,12 @@ app = FastAPI()
 # Avoid CORS error when calling the api from outside domains
 # Set the origins to the domains allowed to access this APIs
 origins = [
-    "http://local.d8mapping.it",
+    # "http://local.d8mapping.it",
     # "https://localhost.tiangolo.com",
-    "http://localhost",
+    # "http://localhost",
     # "http://localhost:8080",
+    # "http://drupal:8080",
+    "*"
 ]
 
 app.add_middleware(
