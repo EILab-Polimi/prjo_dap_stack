@@ -25,6 +25,8 @@ services:
       POSTGRES_USER: prjo
       POSTGRES_PASSWORD: prjo
       POSTGRES_DB: prjo_dap_v2
+    ports:
+      - 5433:5432
     volumes:
       - postgres-data:/var/lib/postgresql/data/
     restart: always
@@ -69,3 +71,4 @@ services:
       - 8008:8000
     # environment:
     #   - DATABASE_URL=postgresql://fastapi_traefik:fastapi_traefik@db:5432/fastapi_traefik
+    restart: always
