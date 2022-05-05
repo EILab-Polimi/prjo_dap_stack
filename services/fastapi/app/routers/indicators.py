@@ -64,6 +64,9 @@ def load_indicator(i_table, scenF=None, expF=None, locF=None):
 
 def create_fake_indicator(time_freq, scenF=None, expF=None, locF=None):
     dfL = []
+    print('create_fake_indicator')
+    print(scenF)
+    print(expF)
     for sc in scenF:
         for exp in expF:
             for l in locF:
@@ -192,7 +195,7 @@ async def graph_indicators_params_new(fullPage: Optional[bool] = True,
                                       loc: Optional[str] = None):
     print('CALL graph_params_new')
     # i_table = 'i_sqwdef_irrd_m'
-    # expF, scenF && loc must be a comma separated values of
+    # expF, scenF && loc must be arrays in url you pass them like &expF=WPP1&expF=WPP2
     print(expF)
 
     dfI, figTitle, iD = load_indicator(i_table, scenF, expF, loc)
@@ -229,19 +232,58 @@ async def graph_indicators_params_new(fullPage: Optional[bool] = True,
         return fig.to_html(include_plotlyjs=False, full_html=False)  # funziona
 
 
-# @router.get( "/indicators/graph_params_new", response_class=HTMLResponse )
-# async def graph_indicators_params_new(i_table: Optional[str] = None,
-#                                       scenF: Optional[str] = None,
-#                                       expF: Optional[str] = None,
-#                                       loc: Optional[str] = None):
+# Project routes
+@router.get("/indicators/plot_def_cycloM", response_class=HTMLResponse)
+async def plot_def_cycloM(fullPage: Optional[bool] = True,
+                                      i_table: Optional[str] = None,
+                                      scenF: Optional[List[str]] = Query(None),
+                                      expF: Optional[List[str]] = Query(None), # WPP
+                                      loc: Optional[List[str]] = Query(None)):
+    print('CALL graph_params_new')
+    # i_table = 'i_sqwdef_irrd_m'
+    # expF, scenF && loc must be arrays in url you pass them like &expF=WPP1&expF=WPP2
+    print(expF)
+
+    dfI, figTitle, iD = load_indicator(i_table, scenF, expF, loc)
+    # print(dfI)
+    # print(figTitle)
+    # print(iD)
+    locations = dfI[param.loc_C].unique()
+    experiments = dfI[param.exp_C].unique()
+    scenarios = dfI[param.scen_C].unique()
+    nSub = len(locations)
+    # TODO: arrange subplot for +1 locations
+    fig = make_subplots(rows=1, cols=1, shared_xaxes=True,
+                        subplot_titles=['{} Reservoir'.format(l) for l in locations])
+    for l in locations:
+        rN = 1
+        cN = 1
+        # dfLoc               = dfI.xs(l,level=param.loc_C)
+        dfLoc = dfI.loc[dfI[param.loc_C] == l].drop(columns=param.loc_C)
+        dfLocGr = dfLoc.groupby([dfLoc[param.time_C].apply(lambda x: x.month), param.scen_C, param.exp_C]).mean()
+        dfPlot = dfLocGr.unstack([1, 2])
+        dfPlot.columns = dfPlot.columns.droplevel()
+        for col in dfPlot.columns:
+            colName = '_'.join(col)
+            fig.add_trace(go.Scatter(x=dfPlot.index, y=dfPlot[col], name=colName), row=rN, col=cN)
+        fig.update_yaxes(title_text=iD['unit'], row=rN, col=cN)
+        fig.update_xaxes(title_text="months", row=rN, col=cN)
+    fig.update_layout(title_text=figTitle)
+    # fig.write_html( os.path.join( param.IMGDIR, '{}.html'.format( figTitle.replace( ' ', '_' ) ) ) )
+
+    if fullPage:
+        return fig.to_html(include_plotlyjs=True, full_html=True)  # funziona
+    else:
+        # https://plotly.com/python-api-reference/generated/plotly.io.to_html.html
+        return fig.to_html(include_plotlyjs=False, full_html=False)  # funziona
 
 
 @router.get("/indicators/plot_def_drw_cycloM", response_class=HTMLResponse)
 async def plot_def_drw_cycloM(fullPage: Optional[bool] = True,
                               i_table: Optional[str] = None,
-                              scenF: Optional[str] = None,
-                              expF: Optional[str] = None,
-                              loc: Optional[str] = None):
+                              scenF: Optional[List[str]] = Query(None),
+                              expF: Optional[List[str]] = Query(None),
+                              loc: Optional[List[str]] = Query(None)):
     """Water deficit ciclostazionario a passo mensile (heatmap?), per idropotabile (subplot uno per schema aqp (19))"""
     i_table = 'i_sqwdef_irrd_m'
     # dfI, figTitle, iD   = load_indicator(i_table,scenF,expF,loc)

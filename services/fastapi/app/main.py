@@ -13,12 +13,13 @@ app = FastAPI()
 
 # Avoid CORS error when calling the api from outside domains
 # Set the origins to the domains allowed to access this APIs
+# Only domains without ports
 origins = [
     # "http://local.d8mapping.it",
     # "https://localhost.tiangolo.com",
     # "http://localhost",
-    # "http://localhost:8080",
-    # "http://drupal:8080",
+    # "http://localhost",
+    # 'http://local.wp4dap_dev.it',
     "*"
 ]
 
@@ -48,3 +49,14 @@ async def portfolios():
         "select distinct exp from ind.i_mean_y_s order by exp", con=pg_engine
     )
     return wpp.to_json()
+
+@app.get("/scenarios")
+async def scenarios():
+    """
+        Get a list of scenarios
+    """
+    pg_engine = database.engine
+    scen = pd.read_sql(
+        "select distinct scen from ind.i_mean_y_s order by scen", con=pg_engine
+    )
+    return scen.to_json()
