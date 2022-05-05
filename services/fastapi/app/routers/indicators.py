@@ -1,4 +1,5 @@
-from fastapi import APIRouter
+from typing import List
+from fastapi import APIRouter, Query
 from fastapi.responses import HTMLResponse
 from typing import Optional
 
@@ -13,8 +14,12 @@ from ..tipico_fast_api import utils
 
 router = APIRouter()
 
-
+# UTILITY FUNCTIONS
 def load_indicator(i_table, scenF=None, expF=None, locF=None):
+
+    print('load_indicator')
+    print(expF)
+
     pg_engine = database.engine
     iD = pd.read_sql(
         "SELECT * from {}.{} WHERE {} = '{}'".format(param.INDSCHEMA, param.I_CAT_TABLENAME, param.I_LABEL_C,
@@ -33,8 +38,10 @@ def load_indicator(i_table, scenF=None, expF=None, locF=None):
             whereFlag = True
     # experiment filter
     if expF:
+        print('if expF')
         figTitle = '{} - Experiment:{} '.format(figTitle, ' '.join(expF))
         expL = "','".join(expF)
+        print(expL)
         if whereFlag:
             i_query = "{} AND {} in ('{}','{}')".format(i_query, param.exp_C, param.BAU_EXP, expL)
         else:
@@ -51,6 +58,7 @@ def load_indicator(i_table, scenF=None, expF=None, locF=None):
             whereFlag = True
 
     dfI = pd.read_sql(i_query, con=pg_engine)
+    print('END load_indicator')
     return dfI, figTitle, iD
 
 
@@ -76,7 +84,9 @@ def sort_key(key_list, sep, position):
     ksorted_idx = np.argsort(key_n)
     return key_list[ksorted_idx]
 
+# END UTILITY FUNCTIONS
 
+# FASTAPI ROUTES
 @router.get("/indicators/", tags=["indicators"])
 async def read_indicators():
     return [{"username": "Rick"}, {"username": "Morty"}]
@@ -174,12 +184,21 @@ async def graph_indicators_params(i_label: Optional[str] = None,
 
 # New version
 @router.get("/indicators/graph_params_new", response_class=HTMLResponse)
-async def graph_indicators_params_new(i_table: Optional[str] = None,
+async def graph_indicators_params_new(fullPage: Optional[bool] = True,
+                                      i_table: Optional[str] = None,
                                       scenF: Optional[str] = None,
-                                      expF: Optional[str] = None,
+                                      # expF: Optional[str] = None, # WPP
+                                      expF: Optional[List[str]] = Query(None), # WPP
                                       loc: Optional[str] = None):
+    print('CALL graph_params_new')
     # i_table = 'i_sqwdef_irrd_m'
+    # expF, scenF && loc must be a comma separated values of
+    print(expF)
+
     dfI, figTitle, iD = load_indicator(i_table, scenF, expF, loc)
+    # print(dfI)
+    # print(figTitle)
+    # print(iD)
     locations = dfI[param.loc_C].unique()
     experiments = dfI[param.exp_C].unique()
     scenarios = dfI[param.scen_C].unique()
@@ -203,7 +222,11 @@ async def graph_indicators_params_new(i_table: Optional[str] = None,
     fig.update_layout(title_text=figTitle)
     # fig.write_html( os.path.join( param.IMGDIR, '{}.html'.format( figTitle.replace( ' ', '_' ) ) ) )
 
-    return fig.to_html(include_plotlyjs=False, full_html=False)  # funziona
+    if fullPage:
+        return fig.to_html(include_plotlyjs=True, full_html=True)  # funziona
+    else:
+        # https://plotly.com/python-api-reference/generated/plotly.io.to_html.html
+        return fig.to_html(include_plotlyjs=False, full_html=False)  # funziona
 
 
 # @router.get( "/indicators/graph_params_new", response_class=HTMLResponse )
@@ -212,8 +235,10 @@ async def graph_indicators_params_new(i_table: Optional[str] = None,
 #                                       expF: Optional[str] = None,
 #                                       loc: Optional[str] = None):
 
+
 @router.get("/indicators/plot_def_drw_cycloM", response_class=HTMLResponse)
-async def plot_def_drw_cycloM(i_table: Optional[str] = None,
+async def plot_def_drw_cycloM(fullPage: Optional[bool] = True,
+                              i_table: Optional[str] = None,
                               scenF: Optional[str] = None,
                               expF: Optional[str] = None,
                               loc: Optional[str] = None):
@@ -227,7 +252,7 @@ async def plot_def_drw_cycloM(i_table: Optional[str] = None,
         iD['unit'])
     ##
     locations = dfI[param.loc_C].unique()
-    scenarios = dfI[param.scen_C].unique()
+    scenarios = dfI[param.scen_C].unique() # TODO deve passare una lista
     experiments = dfI[param.exp_C].unique()
     #
     nSub = len(locations)
@@ -260,4 +285,8 @@ async def plot_def_drw_cycloM(i_table: Optional[str] = None,
     # fig.write_html(os.path.join(param.IMGDIR,'{}.html'.format(figTitle.replace(' ','_'))))
     # print('{} plot done'.format(figTitle))
     # return fig.to_html(include_plotlyjs=False, full_html=False)
-    return fig.to_html(include_plotlyjs=True, full_html=True)
+    if fullPage:
+        return fig.to_html(include_plotlyjs=True, full_html=True)  # funziona
+    else:
+        # https://plotly.com/python-api-reference/generated/plotly.io.to_html.html
+        return fig.to_html(include_plotlyjs=False, full_html=False)  # funziona
