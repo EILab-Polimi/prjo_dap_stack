@@ -60,3 +60,14 @@ async def scenarios():
         "select distinct scen from ind.i_mean_y_s order by scen", con=pg_engine
     )
     return scen.to_json()
+
+@app.get("/indicators")
+async def scenarios():
+    """
+        Get a list of scenarios
+    """
+    pg_engine = database.engine
+    inds = pd.read_sql(
+        "select * from ind.ind_catalogue", con=pg_engine
+    )
+    return inds.to_json()

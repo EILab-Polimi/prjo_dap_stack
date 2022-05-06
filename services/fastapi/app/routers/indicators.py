@@ -90,9 +90,9 @@ def sort_key(key_list, sep, position):
 # END UTILITY FUNCTIONS
 
 # FASTAPI ROUTES
-@router.get("/indicators/", tags=["indicators"])
-async def read_indicators():
-    return [{"username": "Rick"}, {"username": "Morty"}]
+# @router.get("/indicators/", tags=["indicators"])
+# async def read_indicators():
+#     return [{"username": "Rick"}, {"username": "Morty"}]
 
 
 @router.get("/indicators/test", tags=["indicators"])
