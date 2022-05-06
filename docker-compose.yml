@@ -74,6 +74,7 @@ services:
     restart: always
 
   qgis-server:
+      container_name: DAP_qgis
       image: kartoza/qgis-server:LTR
       environment:
         - DEBUG=False
