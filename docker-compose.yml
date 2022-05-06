@@ -72,3 +72,24 @@ services:
     # environment:
     #   - DATABASE_URL=postgresql://fastapi_traefik:fastapi_traefik@db:5432/fastapi_traefik
     restart: always
+
+  qgis-server:
+      image: kartoza/qgis-server:LTR
+      environment:
+        - DEBUG=False
+        - QGIS_LOG_FILE=/tmp/qgis-server/qgis.log
+        - QGIS_SERVER_LOG_FILE=/tmp/qgis-server/qgis-server.log
+        # Log level 0 is the lowest (catch all), 5 is the highest (only fatal error)
+        - QGIS_DEBUG=5
+        - QGIS_SERVER_LOG_LEVEL=5
+        - QGIS_PLUGINPATH=/opt/qgis-server/plugins/
+        # It is important to include this environment variable
+        # QGIS-Server:LTR cgi needs it
+        - QGIS_PROJECT_FILE=/project/world.qgs
+      # network_mode: "bridge"
+      # will mount the local project directory as the /project directory inside the container
+      volumes:
+        - ./services/qgis-server/project:/project
+      ports:
+        # exposing port 80 to 9003 in your local machine
+        - '9003:80'
