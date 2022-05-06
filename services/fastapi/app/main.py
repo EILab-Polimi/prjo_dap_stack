@@ -62,7 +62,7 @@ async def scenarios():
     return scen.to_json()
 
 @app.get("/indicators")
-async def scenarios():
+async def indicators():
     """
         Get a list of scenarios
     """
