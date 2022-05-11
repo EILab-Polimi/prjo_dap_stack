@@ -88,7 +88,8 @@ services:
         # It is important to include this environment variable
         # QGIS-Server:LTR cgi needs it
         # - QGIS_PROJECT_FILE=/project/world.qgs
-        - QGIS_PROJECT_FILE=/project/waterPortfolio_v3.qgz
+        - QGIS_PROJECT_FILE=/project/waterPortfolio_v3.qgs
+        - PGSERVICEFILE=/project/pg_service.conf
       # network_mode: "bridge"
       # will mount the local project directory as the /project directory inside the container
       volumes:
