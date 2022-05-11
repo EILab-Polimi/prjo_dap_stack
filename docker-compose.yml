@@ -75,18 +75,20 @@ services:
 
   qgis-server:
       container_name: DAP_qgis
-      image: kartoza/qgis-server:LTR
+      image: camptocamp/qgis-server:3.18
+      # image: kartoza/qgis-server:LTR
       environment:
-        - DEBUG=False
-        - QGIS_LOG_FILE=/tmp/qgis-server/qgis.log
-        - QGIS_SERVER_LOG_FILE=/tmp/qgis-server/qgis-server.log
+        # - DEBUG=True
+        # - QGIS_LOG_FILE=/tmp/qgis-server/qgis.log
+        # - QGIS_SERVER_LOG_FILE=/tmp/qgis-server/qgis-server.log
         # Log level 0 is the lowest (catch all), 5 is the highest (only fatal error)
-        - QGIS_DEBUG=5
-        - QGIS_SERVER_LOG_LEVEL=5
-        - QGIS_PLUGINPATH=/opt/qgis-server/plugins/
+        # - QGIS_DEBUG=0
+        - QGIS_SERVER_LOG_LEVEL=0
+        # - QGIS_PLUGINPATH=/opt/qgis-server/plugins/
         # It is important to include this environment variable
         # QGIS-Server:LTR cgi needs it
-        - QGIS_PROJECT_FILE=/project/world.qgs
+        # - QGIS_PROJECT_FILE=/project/world.qgs
+        - QGIS_PROJECT_FILE=/project/waterPortfolio_v3.qgz
       # network_mode: "bridge"
       # will mount the local project directory as the /project directory inside the container
       volumes:
@@ -94,3 +96,4 @@ services:
       ports:
         # exposing port 80 to 9003 in your local machine
         - '9003:80'
+      restart: always
