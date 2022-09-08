@@ -75,21 +75,23 @@ services:
 
   qgis-server:
       container_name: DAP_qgis
-      image: camptocamp/qgis-server:3.18
+      image: camptocamp/qgis-server:3.22
       # image: kartoza/qgis-server:LTR
       environment:
-        # - DEBUG=True
-        # - QGIS_LOG_FILE=/tmp/qgis-server/qgis.log
-        # - QGIS_SERVER_LOG_FILE=/tmp/qgis-server/qgis-server.log
+        - DEBUG=True
+        - QGIS_LOG_FILE=/tmp/qgis-server/qgis.log
+        - QGIS_SERVER_LOG_FILE=/tmp/qgis-server/qgis-server.log
         # Log level 0 is the lowest (catch all), 5 is the highest (only fatal error)
-        # - QGIS_DEBUG=0
+        - QGIS_DEBUG=1
         - QGIS_SERVER_LOG_LEVEL=0
         # - QGIS_PLUGINPATH=/opt/qgis-server/plugins/
         # It is important to include this environment variable
         # QGIS-Server:LTR cgi needs it
         # - QGIS_PROJECT_FILE=/project/world.qgs
-        - QGIS_PROJECT_FILE=/project/waterPortfolio_v3.qgs
-        # - PGSERVICEFILE=/project/.pg_service.conf
+        # - QGIS_PROJECT_FILE=/project/waterPortfolio_v3.qgs
+        # - PGSERVICEFILE=/project/.pg_service.conf  # ????? il file c'è ma
+        # - QGIS_AUTH_DB_DIR_PATH=/etc/qgisserver/
+        - QGIS_AUTH_PASSWORD_FILE=/etc/qgisserver/master
       # network_mode: "bridge"
       # will mount the local project directory as the /project directory inside the container
       volumes:
@@ -97,4 +99,33 @@ services:
       ports:
         # exposing port 80 to 9003 in your local machine
         - '9003:80'
+      restart: always
+
+  # taken from https://github.com/opengisch/qgis-docker/blob/master/docker-compose.yml
+  #            https://github.com/opengisch/qgis-server-standalone/blob/master/docker-compose.yml
+  qgis-server-opengisch:
+      container_name: DAP_qgis_3_26
+      image: opengisch/qgis-server:3.26.2-focal
+      environment:
+        # Do not run the embedded copy of nginx
+        # SKIP_NGINX: "true"
+        # run the embedded copy of nginx
+        # SKIP_NGINX: "false"
+        # Improve rendering performance
+        QGIS_SERVER_PARALLEL_RENDERING: "true"
+        QGIS_SERVER_MAX_THREADS: 4
+        # Limit the maximum size returned by a GetMap
+        QGIS_SERVER_WMS_MAX_HEIGHT: 5000
+        QGIS_SERVER_WMS_MAX_WIDTH: 5000
+      volumes:
+        # Data should be mount RO when working
+        # with GeoPackages and more than one QGIS container
+        - ./services/qgis-server-opengisch/data:/io/data
+        - ./services/qgis-server-opengisch/plugins:/io/plugins
+        - ./services/qgis-server-opengisch/fonts:/usr/share/fonts
+        - ./services/qgis-server-opengisch/svg:/var/lib/qgis/.local/share/QGIS/QGIS3/profiles/default/svg
+        # - ./conf/pg_service.conf:/etc/postgresql-common/pg_service.conf:ro
+      ports:
+        # exposing port 80 to 9004 in your local machine
+        - '9004:80'
       restart: always
