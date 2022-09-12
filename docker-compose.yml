@@ -22,9 +22,9 @@ services:
       context: .
       dockerfile: services/postgres/Dockerfile
     environment:
-      POSTGRES_USER: prjo
-      POSTGRES_PASSWORD: prjo
-      POSTGRES_DB: prjo_dap_v2
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: 7NzCLS7C2fJCntT
+      POSTGRES_DB: postgres
     ports:
       - 5433:5432
     volumes:
