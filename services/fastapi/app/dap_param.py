@@ -13,55 +13,91 @@ import datetime as dt
 import numpy as np
 import pandas as pd
 import sqlalchemy as db
-from calendar import month_abbr
 
 from pathlib import Path
 import pdb
 
 # local modules
 sys.path.insert(0, '/wrk/progetti/tipico/')
-# import utils as ut
-# import modelclasslibrary as mcl
+#import utils as ut
+#import modelclasslibrary as mcl
+from calendar import month_abbr
+import plotly.express as px
 
 ##PATHS
-# ROOTDIR = Path( '/mnt/data/progetti/prjo_dap/' );
-# ROOTDIR.mkdir( parents=True, exist_ok=True )
-# DATADIR = Path( ROOTDIR, 'data' );
-# DATADIR.mkdir( parents=True, exist_ok=True )
-# RAWDIR = Path( DATADIR, 'raw' );
-# RAWDIR.mkdir( parents=True, exist_ok=True )
-# OUTDIR = Path( ROOTDIR, 'output' );
-# OUTDIR.mkdir( parents=True, exist_ok=True )
-# IMGDIR = Path( ROOTDIR, 'fig' );
-# IMGDIR.mkdir( parents=True, exist_ok=True )
-# LOGDIR = Path( ROOTDIR, 'log' );
-# LOGDIR.mkdir( parents=True, exist_ok=True )
+#ROOTDIR = Path('/mnt/data/progetti/prjo_dap/');
+#ROOTDIR.mkdir(parents=True, exist_ok=True)
+#DATADIR = Path(ROOTDIR, 'data');
+#DATADIR.mkdir(parents=True, exist_ok=True)
+#RAWDIR = Path(DATADIR, 'raw');
+#RAWDIR.mkdir(parents=True, exist_ok=True)
+#OUTDIR = Path(ROOTDIR, 'output');
+#OUTDIR.mkdir(parents=True, exist_ok=True)
+#IMGDIR = Path(ROOTDIR, 'fig');
+#IMGDIR.mkdir(parents=True, exist_ok=True)
+#LOGDIR = Path(ROOTDIR, 'log');
+#LOGDIR.mkdir(parents=True, exist_ok=True)
 
 ##TIME
 HORIZON = pd.date_range(start=dt.datetime(2025, 1, 1), end=dt.datetime(2075, 1, 1))
+SEC_DAY = 86400
+
+##time index for monthly parameters
+monthsT = pd.Series(pd.date_range(start=dt.datetime(1900, 1, 1), periods=12, freq='MS'), index=range(1, 13))
+monthsT_end = pd.Series(pd.date_range(start=dt.datetime(1900, 1, 1), periods=12, freq='M'), index=range(1, 13))
+daysT       = pd.Series(pd.date_range(start=dt.datetime(1900,1,1), end=dt.datetime(1900,12,31), freq='D'),index=range(1,366))
+monthsT_end = pd.Series(pd.date_range(start=dt.datetime(1900,1,1), periods=12, freq='M'),index=range(1,13))
 
 ##DATABASE
-#                         dialect+driver://username:password@host:port/database
-# pg_engine = db.create_engine('postgresql://prjo:prjo_2112@localhost/prjo_dap')
-pg_engine = db.create_engine('postgresql://prjo:prjo@localhost/prjo_dap_v2')
+pg_engine = db.create_engine('postgresql://prjo:prjo_2112@localhost/prjo_dap')
 
-RAWSCHEMA = 'raw'
-INDSCHEMA = 'ind'
-INPUTSCHEMA = 'input'
-OUTPUTSCHEMA = 'output'
+# RAWSCHEMA   = 'raw'
+# INDSCHEMA   = 'ind'
+# INPUTSCHEMA   = 'input'
+# OUTPUTSCHEMA   = 'output'
+
+##COLOR SCALE
+CLR_SCALE = px.colors.qualitative.Plotly
+##scenarios color scale
+SCEN_CLRSCALE = {0: px.colors.sequential.Blues_r, 1: px.colors.sequential.Reds_r, 2: px.colors.sequential.Greens_r}
+
 # columns standard names:
-time_C = 'time'
-loc_C = 'loc_id'
-exp_C = 'exp'
-scen_C = 'scen'
-value_C = 'value'
-COLNAMES = [time_C, loc_C, exp_C, scen_C, value_C]
+ID_C = 'id'
+TIME_C = 'time'
+TIME_START_C = 'time_start'
+TIME_END_C = 'time_end'
+LAB_C = 'label'
+PLACE_C = 'place_id'
+EXP_C = 'exp_id'
+SCEN_C = 'scen_id'
+VALUE_C = 'value'
+DESCR_C = 'descr'
+DESCR_M_C = 'descr_mng'
+DESCR_P_C = 'descr_plan'
+QC_C = 'quality_check'
+UOM_C = 'uom'
+GEOM_C = 'geom'
+ATTR_C = 'attributes'
+TYPE_C = 'type'
+ITEM_C = 'item_id'
+API_C = 'api_root'
+CHART_C = 'chart_id'
+# COLNAMES    = [time_C, loc_C, exp_C, scen_C, value_C]
 
-# ind description standard names
-I_CAT_TABLENAME = 'ind_catalogue'
-I_LABEL_C = 'label'
-I_DESCR_C = 'descr'
-I_UNIT_C = 'unit'
+# table names
+
+CATALOG_T = 'catalog'
+CHART_CAT_T = 'chart_catalog'
+CHARTS_T = 'charts'
+EXP_T = 'experiments'
+IND_T = 'indicators'
+LINES_T = 'lines'
+PRM_T = 'parameters'
+PLACES_T = 'places'
+POINTS_T = 'points'
+POLYGONS_T = 'polygons'
+SCEN_T = 'scenarios'
+VARS_T = 'variables'
 
 ##VARIABLES
 variablesDict = {
@@ -84,5 +120,5 @@ BAU_EXP = 'bau'
 # drinking water supply demand
 dwdDict = {'Locone': 100, 'Pertusillo': 10, 'Occhito': 500, 'MonteCotugno': 250, 'Conza': 300}
 
-# PLOT Labels
+##PLOT Labels
 monthsA = np.array([m for m in month_abbr])
