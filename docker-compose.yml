@@ -57,21 +57,21 @@ services:
     #   - postgis
     restart: always
 
-  # fastapi:
-  #   container_name: DAP_fastapi
-  #   depends_on:
-  #     - postgres
-  #   build:
-  #     context: .
-  #     dockerfile: services/fastapi/Dockerfile
-  #   command: uvicorn app.main:app --host 0.0.0.0
-  #   # volumes:
-  #   #   - .:/app
-  #   ports:
-  #     - 8008:8000
-  #   # environment:
-  #   #   - DATABASE_URL=postgresql://fastapi_traefik:fastapi_traefik@db:5432/fastapi_traefik
-  #   restart: always
+  fastapi:
+    container_name: DAP_fastapi
+    depends_on:
+      - postgres
+    build:
+      context: .
+      dockerfile: services/fastapi/Dockerfile
+    command: uvicorn app.main:app --host 0.0.0.0
+    # volumes:
+    #   - .:/app
+    ports:
+      - 8008:8000
+    # environment:
+    #   - DATABASE_URL=postgresql://fastapi_traefik:fastapi_traefik@db:5432/fastapi_traefik
+    restart: always
 
   qgis-server:
       container_name: DAP_qgis
