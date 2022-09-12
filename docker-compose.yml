@@ -39,7 +39,7 @@ services:
       context: .
       dockerfile: services/drupal/Dockerfile
     ports:
-      - 8080:80
+      - 8082:80
     volumes:
       - drupal-data:/var/www/html
       # - d8all:/opt/drupal
@@ -90,7 +90,7 @@ services:
         # - QGIS_PROJECT_FILE=/project/world.qgs
         # - QGIS_PROJECT_FILE=/project/waterPortfolio_v3.qgs
         # - PGSERVICEFILE=/project/.pg_service.conf  # ????? il file c'è ma
-        # - QGIS_AUTH_DB_DIR_PATH=/etc/qgisserver/
+        - QGIS_AUTH_DB_DIR_PATH=/etc/qgisserver/
         - QGIS_AUTH_PASSWORD_FILE=/etc/qgisserver/master
       # network_mode: "bridge"
       # will mount the local project directory as the /project directory inside the container
@@ -107,6 +107,7 @@ services:
       container_name: DAP_qgis_3_26
       image: opengisch/qgis-server:3.26.2-focal
       environment:
+        # https://github.com/opengisch/qgis-docker#nginx
         # Do not run the embedded copy of nginx
         # SKIP_NGINX: "true"
         # run the embedded copy of nginx
@@ -117,6 +118,7 @@ services:
         # Limit the maximum size returned by a GetMap
         QGIS_SERVER_WMS_MAX_HEIGHT: 5000
         QGIS_SERVER_WMS_MAX_WIDTH: 5000
+        QGIS_AUTH_PASSWORD_FILE: /io/data/master
       volumes:
         # Data should be mount RO when working
         # with GeoPackages and more than one QGIS container
