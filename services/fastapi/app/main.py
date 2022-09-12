@@ -64,7 +64,7 @@ async def scenarios():
 @app.get("/indicators")
 async def indicators():
     """
-        Get a list of scenarios
+        Get a list of indicators
     """
     pg_engine = database.engine
     inds = pd.read_sql(
