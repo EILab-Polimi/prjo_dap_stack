@@ -81,9 +81,9 @@ def load_indicator(item_place_df, scenF=None, expF=None):
 def load_variable(item_place_df, scenF=None, expF=None):
     """load variable timeseries from db
     :param item_place_df: pandas.core.frame.DataFrame [ n rows x 2 cols (id, place_id) ]
-    :param scenF:
-    :param expF:
-    :return:
+    :param scenF: 
+    :param expF: 
+    :return: 
     """
     pg_engine = database.engine
     itemF = item_place_df['id'].astype(str).to_list()
@@ -145,6 +145,7 @@ async def cyclost_lineplot(plot_id: str,
     :return:
     """
     print(plot_id);
+    # print(scenF);
     pg_engine = database.engine
 
     """ Get the item_place_df parameter to get data for graph given th plot_id"""
@@ -230,8 +231,12 @@ async def cyclost_lineplot(plot_id: str,
             rN += 1
             cN = 1
     # show last legend
-    fig.update_traces(selector=-1, showlegend=True)
-    fig.update_traces(selector=-2, showlegend=True)
+    if scenF is not None:
+        if len(scenF) == 1:
+            pass
+    else:
+        fig.update_traces(selector=-1, showlegend=True)
+        fig.update_traces(selector=-2, showlegend=True)
 
     if fullPage:
         fig.update_layout(title_text=figTitle)
