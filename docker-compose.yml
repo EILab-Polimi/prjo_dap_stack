@@ -78,9 +78,9 @@ services:
       image: camptocamp/qgis-server:3.22
       # image: kartoza/qgis-server:LTR
       environment:
-        - DEBUG=True
-        - QGIS_LOG_FILE=/tmp/qgis-server/qgis.log
-        - QGIS_SERVER_LOG_FILE=/tmp/qgis-server/qgis-server.log
+        # - DEBUG=True
+        # - QGIS_LOG_FILE=/tmp/qgis-server/qgis.log
+        # - QGIS_SERVER_LOG_FILE=/tmp/qgis-server/qgis-server.log
         # Log level 0 is the lowest (catch all), 5 is the highest (only fatal error)
         - QGIS_DEBUG=1
         - QGIS_SERVER_LOG_LEVEL=0
@@ -96,6 +96,7 @@ services:
       # will mount the local project directory as the /project directory inside the container
       volumes:
         - ./services/qgis-server/project:/project
+        #- ./services/qgis-server/plugins:/opt/qgis-server/plugins
       ports:
         # exposing port 80 to 9003 in your local machine
         - '9003:80'
@@ -107,6 +108,8 @@ services:
       container_name: DAP_qgis_3_26
       image: opengisch/qgis-server:3.26.2-focal
       environment:
+        QGIS_DEBUG: 1
+        QGIS_SERVER_LOG_LEVEL: 0
         # https://github.com/opengisch/qgis-docker#nginx
         # Do not run the embedded copy of nginx
         # SKIP_NGINX: "true"
@@ -118,6 +121,7 @@ services:
         # Limit the maximum size returned by a GetMap
         QGIS_SERVER_WMS_MAX_HEIGHT: 5000
         QGIS_SERVER_WMS_MAX_WIDTH: 5000
+        # QGIS_AUTH_DB_DIR_PATH: /io/data/
         QGIS_AUTH_PASSWORD_FILE: /io/data/master
       volumes:
         # Data should be mount RO when working
