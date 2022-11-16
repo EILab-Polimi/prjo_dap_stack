@@ -17,11 +17,20 @@ from ..tipico_fast_api import utils
 router = APIRouter()
 
 
-def load_timeseries(item_place_df, ts_type, scenF=None, expF=None):
+def load_timeseries(item_place_df, ts_type, scenF=None, expF=None, locF=None):
     pg_engine = database.engine
     '''load timeseries from db'''
-    itemF = item_place_df['id'].astype(str).to_list()
+    # location filter
+    print(locF)
+    if len(locF):
+        # figTitle    = '{} - Experiment:{} '.format(figTitle,' '.join(expF))
+        itemF = item_place_df.set_index('place_id').loc[locF, 'id'].astype(str).to_list()
+    else:
+        itemF = item_place_df['id'].astype(str).to_list()
     itemL = "','".join(itemF)
+
+    print('load_timesries itemL')
+    print(itemL)
 
     if ts_type.startswith('i_'):
         tabName = param.IND_T
@@ -43,7 +52,8 @@ def load_timeseries(item_place_df, ts_type, scenF=None, expF=None):
         i_query = f"{i_query} AND {param.EXP_C} in ('{expL}')"
 
     # #location filter not implemented
-    dfTs = pd.read_sql(i_query, con=pg_engine, params={'item_id_list': item_place_df['id'].to_list()})
+    #dfTs = pd.read_sql(i_query, con=pg_engine, params={'item_id_list': item_place_df['id'].to_list()})
+    dfTs = pd.read_sql(i_query,con=pg_engine)
     dfTs = dfTs.merge(item_place_df, left_on=param.ITEM_C, right_on=param.ID_C)
     return dfTs
 
@@ -81,9 +91,9 @@ def load_indicator(item_place_df, scenF=None, expF=None):
 def load_variable(item_place_df, scenF=None, expF=None):
     """load variable timeseries from db
     :param item_place_df: pandas.core.frame.DataFrame [ n rows x 2 cols (id, place_id) ]
-    :param scenF: 
-    :param expF: 
-    :return: 
+    :param scenF:
+    :param expF:
+    :return:
     """
     pg_engine = database.engine
     itemF = item_place_df['id'].astype(str).to_list()
@@ -107,35 +117,13 @@ def load_variable(item_place_df, scenF=None, expF=None):
     return dfV
 
 
-def create_fake_indicator(time_freq, scenF=None, expF=None, locF=None):
-    dfL = []
-    for sc in scenF:
-        for exp in expF:
-            for l in locF:
-                if time_freq == 'monthly':
-                    df = pd.DataFrame(np.random.rand(12), columns=[param.value_C])
-                    df[param.time_C] = np.arange(1, 13)
-                df[param.loc_C] = l
-                df[param.exp_C] = exp
-                df[param.scen_C] = sc
-                dfL.append(df.set_index(param.time_C))
-    return pd.concat(dfL, axis=0)
-
-
-def sort_key(key_list, sep, position):
-    '''return sorted list of str keys composite'''
-    key_n = [float(k.split(sep)[position]) for k in key_list]
-    key_n = [float(k.split('_')[1]) for k in key_list]
-    ksorted_idx = np.argsort(key_n)
-    return key_list[ksorted_idx]
-
-
 # plot_id == ts_type
 @router.get("/indicators/cyclost_lineplot")
 async def cyclost_lineplot(plot_id: str,
                            fullPage: Optional[bool] = True,
                            scenF: Optional[str] = None,
-                           expF: List[str] = Query(default=[])):
+                           expF: List[str] = Query(default=[]),
+                           locF: List[str] = Query(default=[])):
     """
 
     :param plot_id: passed from
@@ -146,9 +134,13 @@ async def cyclost_lineplot(plot_id: str,
     """
     print(plot_id);
     # print(scenF);
+
+    # Test locF
+    # locF = [2] --- OKKKKK così funziona
+
     pg_engine = database.engine
 
-    """ Get the item_place_df parameter to get data for graph given th plot_id"""
+    """ Get the item_place_df parameter to get data for graph given the plot_id"""
     item_place_df = pd.read_sql(
         f"SELECT {param.ID_C},{param.PLACE_C} FROM {param.CATALOG_T} WHERE {param.TYPE_C} = '{plot_id}'",
         con=pg_engine)
@@ -162,20 +154,11 @@ async def cyclost_lineplot(plot_id: str,
     # print(type(item_place_df))
 
     # get data
-
-    #dfI = load_indicator(item_place_df, scenF, expF)
-    ## print(dfI)
-    ## print(type(dfI))
-
-    ## places              = dfI[param.PLACE_C].unique()
-    #experiments = np.sort(dfI[param.EXP_C].unique())
-    #scenarios = np.sort(dfI[param.SCEN_C].unique())
-
-    dfTs = load_timeseries(item_place_df, plot_id, scenF, expF)
+    dfTs = load_timeseries(item_place_df, plot_id, scenF, expF, locF)
+    #dfTs = load_timeseries(item_place_df, plot_id, scenF, expF)
     # places              = dfTs[prm.PLACE_C].unique()
     experiments = np.sort(dfTs[param.EXP_C].unique())
     scenarios = np.sort(dfTs[param.SCEN_C].unique())
-
     nSub = item_place_df.shape[0]
     # arrange subplots
     if nSub <= 3:
@@ -208,10 +191,6 @@ async def cyclost_lineplot(plot_id: str,
         # loop over scenarios
         for sc in scenarios:
             scLabel = scenariosT.loc[sc, param.LAB_C]
-            #dfPlot = dfI.loc[
-            #    (dfI[param.SCEN_C] == sc) & (dfI[param.PLACE_C] == itplR[param.PLACE_C]), [param.TIME_START_C,
-            #                                                                               param.VALUE_C]].set_index(
-            #    param.TIME_START_C).sort_index()
             dfPlot = dfTs.loc[(dfTs[param.SCEN_C] == sc) & (dfTs[param.PLACE_C] == itplR[param.PLACE_C]), [param.TIME_START_C,
                                                                                                      param.VALUE_C]].set_index(
                 param.TIME_START_C).sort_index()
@@ -331,7 +310,6 @@ async def cyclost_heatmap(plot_id: str,
         return {"title": figTitle, "graph": fig.to_html(include_plotlyjs=False, full_html=False)}
 
 
-# @router.get("/indicators/wdistr_cost_barplot", response_class=HTMLResponse)
 @router.get("/indicators/wdistr_cost_barplot")
 async def wdistr_cost_barplot(plot_id: str,
                               fullPage: Optional[bool] = True,
@@ -415,7 +393,7 @@ async def prm_groupedbarplot(plot_id: str,
                              fullPage: Optional[bool] = True,
                              scenF: Optional[str] = None,
                              expF: List[str] = Query(default=[]),
-                             loc: Optional[str] = None):
+                             locF: List[str] = Query(default=[])):
     '''plot cyclostationary monthly data: # TODO: generalizzare per il caso con uno scenario e tanti exp e per plot giornalieri'''
     pg_engine = database.engine
     item_place_df = pd.read_sql(
@@ -423,7 +401,7 @@ async def prm_groupedbarplot(plot_id: str,
     # sort places
     item_place_df.sort_values(by=param.PLACE_C, inplace=True)
     # get data
-    dfTs = load_timeseries(item_place_df, plot_id, None, expF)
+    dfTs = load_timeseries(item_place_df, plot_id, None, expF, locF)
     if dfTs.empty:
         return print(f'no data for {plot_id} and experiment {expF}')
     # places              = dfTs[param.PLACE_C].unique()

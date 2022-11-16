@@ -19,34 +19,44 @@ import pdb
 
 # local modules
 sys.path.insert(0, '/wrk/progetti/tipico/')
-#import utils as ut
-#import modelclasslibrary as mcl
+# import utils as ut
+# import modelclasslibrary as mcl
 from calendar import month_abbr
 import plotly.express as px
 
 ##PATHS
-#ROOTDIR = Path('/mnt/data/progetti/prjo_dap/');
-#ROOTDIR.mkdir(parents=True, exist_ok=True)
-#DATADIR = Path(ROOTDIR, 'data');
-#DATADIR.mkdir(parents=True, exist_ok=True)
-#RAWDIR = Path(DATADIR, 'raw');
-#RAWDIR.mkdir(parents=True, exist_ok=True)
-#OUTDIR = Path(ROOTDIR, 'output');
-#OUTDIR.mkdir(parents=True, exist_ok=True)
-#IMGDIR = Path(ROOTDIR, 'fig');
-#IMGDIR.mkdir(parents=True, exist_ok=True)
-#LOGDIR = Path(ROOTDIR, 'log');
-#LOGDIR.mkdir(parents=True, exist_ok=True)
+# ROOTDIR = Path('/mnt/data/progetti/prjo_dap/');
+# ROOTDIR.mkdir(parents=True, exist_ok=True)
+# DATADIR = Path(ROOTDIR, 'data');
+# DATADIR.mkdir(parents=True, exist_ok=True)
+# RAWDIR = Path(DATADIR, 'raw');
+# RAWDIR.mkdir(parents=True, exist_ok=True)
+# OUTDIR = Path(ROOTDIR, 'output');
+# OUTDIR.mkdir(parents=True, exist_ok=True)
+# IMGDIR = Path(ROOTDIR, 'fig');
+# IMGDIR.mkdir(parents=True, exist_ok=True)
+# LOGDIR = Path(ROOTDIR, 'log');
+# LOGDIR.mkdir(parents=True, exist_ok=True)
 
 ##TIME
+BASELINE = pd.date_range(start=dt.datetime(2010, 1, 1), end=dt.datetime(2019, 12, 31))
+BASELINE_NL = pd.date_range(start=dt.datetime(2010, 1, 1), end=dt.datetime(2019, 12, 31));
+BASELINE_NL = BASELINE_NL[~((BASELINE_NL.month == 2) & (BASELINE_NL.day == 29))]
+HORIZON50 = pd.date_range(start=dt.datetime(2050, 1, 1), end=dt.datetime(2059, 12, 31));
+HORIZON50 = HORIZON50[~((HORIZON50.month == 2) & (HORIZON50.day == 29))]
+HORIZON90 = pd.date_range(start=dt.datetime(2090, 1, 1), end=dt.datetime(2099, 12, 31));
+HORIZON90 = HORIZON90[~((HORIZON90.month == 2) & (HORIZON90.day == 29))]
 HORIZON = pd.date_range(start=dt.datetime(2025, 1, 1), end=dt.datetime(2075, 1, 1))
 SEC_DAY = 86400
+
+timeScenD = {0: BASELINE_NL, 1: HORIZON50, 2: HORIZON50, 3: HORIZON90, 4: HORIZON90}
 
 ##time index for monthly parameters
 monthsT = pd.Series(pd.date_range(start=dt.datetime(1900, 1, 1), periods=12, freq='MS'), index=range(1, 13))
 monthsT_end = pd.Series(pd.date_range(start=dt.datetime(1900, 1, 1), periods=12, freq='M'), index=range(1, 13))
-daysT       = pd.Series(pd.date_range(start=dt.datetime(1900,1,1), end=dt.datetime(1900,12,31), freq='D'),index=range(1,366))
-monthsT_end = pd.Series(pd.date_range(start=dt.datetime(1900,1,1), periods=12, freq='M'),index=range(1,13))
+daysT = pd.Series(pd.date_range(start=dt.datetime(1900, 1, 1), end=dt.datetime(1900, 12, 31), freq='D'),
+                  index=range(1, 366))
+monthsT_end = pd.Series(pd.date_range(start=dt.datetime(1900, 1, 1), periods=12, freq='M'), index=range(1, 13))
 
 ##DATABASE
 pg_engine = db.create_engine('postgresql://prjo:prjo_2112@localhost/prjo_dap')
