@@ -6,6 +6,8 @@ from fastapi.middleware.cors import CORSMiddleware
 import pandas as pd
 
 from .routers import indicators
+from .routers import geocoder
+
 from .sql import database
 
 
@@ -33,6 +35,7 @@ app.add_middleware(
 
 # Add routes from external file
 app.include_router(indicators.router)
+app.include_router(geocoder.router)
 
 # Add routes directly
 @app.get("/")
