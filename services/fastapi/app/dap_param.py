@@ -40,11 +40,11 @@ import plotly.express as px
 
 ##TIME
 BASELINE = pd.date_range(start=dt.datetime(2010, 1, 1), end=dt.datetime(2019, 12, 31))
-BASELINE_NL = pd.date_range(start=dt.datetime(2010, 1, 1), end=dt.datetime(2019, 12, 31));
+BASELINE_NL = pd.date_range(start=dt.datetime(2010, 1, 1), end=dt.datetime(2019, 12, 31))
 BASELINE_NL = BASELINE_NL[~((BASELINE_NL.month == 2) & (BASELINE_NL.day == 29))]
-HORIZON50 = pd.date_range(start=dt.datetime(2050, 1, 1), end=dt.datetime(2059, 12, 31));
+HORIZON50 = pd.date_range(start=dt.datetime(2050, 1, 1), end=dt.datetime(2059, 12, 31))
 HORIZON50 = HORIZON50[~((HORIZON50.month == 2) & (HORIZON50.day == 29))]
-HORIZON90 = pd.date_range(start=dt.datetime(2090, 1, 1), end=dt.datetime(2099, 12, 31));
+HORIZON90 = pd.date_range(start=dt.datetime(2090, 1, 1), end=dt.datetime(2099, 12, 31))
 HORIZON90 = HORIZON90[~((HORIZON90.month == 2) & (HORIZON90.day == 29))]
 HORIZON = pd.date_range(start=dt.datetime(2025, 1, 1), end=dt.datetime(2075, 1, 1))
 SEC_DAY = 86400
@@ -119,6 +119,7 @@ variablesDict = {
     'tmean': {'descr': {'it': 'temperatura media', 'en': 'mean temperature'}, 'unit': '[°C]',
               'dbtable': 'temperature_mean'},
     'p': {'descr': {'it': 'precipitazione', 'en': 'precipitation'}, 'unit': '[mm]', 'dbtable': 'precipitation'},
+    'T': {'descr': {'it': 'temperatura', 'en': 'temperature'}, 'unit': '[°C]', 'dbtable': 'temperature'},
     'dwa': {'descr': {'it': 'prelievo idropotabile', 'en': 'drinking water abstraction'}, 'unit': '[l/sec]',
             'dbtable': 'dw_abstraction'},
 }

@@ -22,7 +22,7 @@ def load_timeseries(item_place_df, ts_type, scenF=None, expF=None, locF=None):
     '''load timeseries from db'''
     # location filter
     print(locF)
-    if len(locF):
+    if locF is not None and len(locF):
         # figTitle    = '{} - Experiment:{} '.format(figTitle,' '.join(expF))
         itemF = item_place_df.set_index('place_id').loc[locF, 'id'].astype(str).to_list()
     else:
@@ -52,8 +52,8 @@ def load_timeseries(item_place_df, ts_type, scenF=None, expF=None, locF=None):
         i_query = f"{i_query} AND {param.EXP_C} in ('{expL}')"
 
     # #location filter not implemented
-    #dfTs = pd.read_sql(i_query, con=pg_engine, params={'item_id_list': item_place_df['id'].to_list()})
-    dfTs = pd.read_sql(i_query,con=pg_engine)
+    # dfTs = pd.read_sql(i_query, con=pg_engine, params={'item_id_list': item_place_df['id'].to_list()})
+    dfTs = pd.read_sql(i_query, con=pg_engine)
     dfTs = dfTs.merge(item_place_df, left_on=param.ITEM_C, right_on=param.ID_C)
     return dfTs
 
@@ -68,7 +68,6 @@ def load_indicator(item_place_df, scenF=None, expF=None):
     pg_engine = database.engine
     itemF = item_place_df['id'].astype(str).to_list()
     itemL = "','".join(itemF)
-    print(itemL)
     i_query = f"SELECT * from {param.IND_T} WHERE {param.ITEM_C} in ('{itemL}')"
     # scenarios filter
     if scenF is not None:
@@ -91,9 +90,9 @@ def load_indicator(item_place_df, scenF=None, expF=None):
 def load_variable(item_place_df, scenF=None, expF=None):
     """load variable timeseries from db
     :param item_place_df: pandas.core.frame.DataFrame [ n rows x 2 cols (id, place_id) ]
-    :param scenF:
-    :param expF:
-    :return:
+    :param scenF: 
+    :param expF: 
+    :return: 
     """
     pg_engine = database.engine
     itemF = item_place_df['id'].astype(str).to_list()
@@ -141,25 +140,18 @@ async def cyclost_lineplot(plot_id: str,
     pg_engine = database.engine
 
     """ Get the item_place_df parameter to get data for graph given the plot_id"""
+    '''plot cyclostationary monthly data: # TODO: generalizzare per il caso con uno scenario e tanti exp e per plot giornalieri'''
     item_place_df = pd.read_sql(
-        f"SELECT {param.ID_C},{param.PLACE_C} FROM {param.CATALOG_T} WHERE {param.TYPE_C} = '{plot_id}'",
-        con=pg_engine)
-
-    # print(item_place_df)
+        f"SELECT {param.ID_C},{param.PLACE_C} FROM {param.CATALOG_T} WHERE {param.TYPE_C} = '{plot_id}'", con=pg_engine)
 
     # sort places
     item_place_df.sort_values(by=param.PLACE_C, inplace=True)
-    print('item_place_df  - cyclost_lineplot')
-    print(item_place_df)
-    # print(type(item_place_df))
-
     # get data
     dfTs = load_timeseries(item_place_df, plot_id, scenF, expF, locF)
-    #dfTs = load_timeseries(item_place_df, plot_id, scenF, expF)
-    # places              = dfTs[prm.PLACE_C].unique()
+    places = dfTs[param.PLACE_C].unique()
     experiments = np.sort(dfTs[param.EXP_C].unique())
     scenarios = np.sort(dfTs[param.SCEN_C].unique())
-    nSub = item_place_df.shape[0]
+    nSub = len(places)
     # arrange subplots
     if nSub <= 3:
         nRows = 1
@@ -181,28 +173,29 @@ async def cyclost_lineplot(plot_id: str,
     figTitle = catalogT.loc[item_place_df[param.ID_C], param.DESCR_C].iloc[0].title()
     figLabel = catalogT.loc[item_place_df[param.ID_C], param.TYPE_C].iloc[0]
     # init figure
-    fig = make_subplots(rows=nRows, cols=nCols, shared_xaxes=False, subplot_titles=places_labels.to_list())
+    fig = make_subplots(rows=nRows, cols=nCols, shared_xaxes=False, subplot_titles=places_labels.to_list(),
+                        vertical_spacing=0.2, horizontal_spacing=0.07
+                        )
     rN = 1
     cN = 1
-    # END TODO
-
     # loop over places
-    for id, itplR in item_place_df.iterrows():
+    for pl in places:
+        itplR = item_place_df.loc[item_place_df[param.PLACE_C] == pl].squeeze()
         # loop over scenarios
         for sc in scenarios:
             scLabel = scenariosT.loc[sc, param.LAB_C]
-            dfPlot = dfTs.loc[(dfTs[param.SCEN_C] == sc) & (dfTs[param.PLACE_C] == itplR[param.PLACE_C]), [param.TIME_START_C,
-                                                                                                     param.VALUE_C]].set_index(
+            dfPlot = dfTs.loc[
+                (dfTs[param.SCEN_C] == sc) & (dfTs[param.PLACE_C] == itplR[param.PLACE_C]), [param.TIME_START_C,
+                                                                                             param.VALUE_C]].set_index(
                 param.TIME_START_C).sort_index()
-
+            # fig.add_trace(go.Scatter(x=dfPlot.index, y=dfPlot[param.VALUE_C],name=scLabel,legendgroup=scLabel, showlegend=True,line_color=param.CLR_SCALE[sc]), row=rN, col=cN)
             fig.add_trace(
                 go.Scatter(x=dfPlot.index, y=dfPlot[param.VALUE_C], name=scLabel, legendgroup=scLabel, showlegend=False,
                            line_color=param.CLR_SCALE[sc]), row=rN, col=cN)
+        # breakpoint()
         uom = catalogT.loc[itplR[param.ID_C], param.UOM_C]
         fig.update_yaxes(title_text=uom, row=rN, col=cN)
-        #fig.update_xaxes(title_text="months", tickformat='%d-%b', tickmode='array', row=rN, col=cN)
-        fig.update_xaxes(tickformat = '%d-%b', tickmode = 'array', row=rN, col=cN)
-
+        fig.update_xaxes(tickformat='%d-%b', tickmode='array', row=rN, col=cN)
         # update row and col number
         if cN < nCols:
             cN += 1
@@ -214,11 +207,11 @@ async def cyclost_lineplot(plot_id: str,
         if len(scenF) == 1:
             pass
     else:
-        fig.update_traces(selector=-1, showlegend=True)
-        fig.update_traces(selector=-2, showlegend=True)
+        for s in range(0, len(scenarios)): fig.update_traces(selector=-(1 + s), showlegend=True)
+        fig.update_layout(legend_title_text='Scenarios')
 
     if fullPage:
-        fig.update_layout(title_text=figTitle)
+        fig.update_layout(title_text=figTitle, margin=go.layout.Margin(l=50, r=50, b=50, t=65))
         # return fig.to_html(include_plotlyjs=True, full_html=True)
         return HTMLResponse(content=fig.to_html(include_plotlyjs=True, full_html=True), status_code=200)
     else:
@@ -381,7 +374,7 @@ async def wdistr_cost_barplot(plot_id: str,
     fig.update_layout(barmode='stack')
     if fullPage:
         fig.update_layout(title_text=figTitle)
-        #return fig.to_html(include_plotlyjs=True, full_html=True)
+        # return fig.to_html(include_plotlyjs=True, full_html=True)
         return HTMLResponse(content=fig.to_html(include_plotlyjs=True, full_html=True), status_code=200)
     else:
         # return fig.to_html(include_plotlyjs=False, full_html=False)
@@ -422,12 +415,13 @@ async def prm_groupedbarplot(plot_id: str,
         dfPlot = dfTs.loc[(dfTs[param.PLACE_C] == itplR[param.PLACE_C]), [param.TIME_C, param.VALUE_C]].set_index(
             param.TIME_C).sort_index()
         fig.add_trace(
-            go.Bar(x=dfPlot.index.strftime('%b'), y=dfPlot[param.VALUE_C], name=places_labels.loc[itplR[param.PLACE_C]]))
+            go.Bar(x=dfPlot.index.strftime('%b'), y=dfPlot[param.VALUE_C],
+                   name=places_labels.loc[itplR[param.PLACE_C]]))
     # adjust title and uom
     fig.update_layout(barmode='group', yaxis=dict(title=unit_labels.iloc[0]))
     if fullPage:
         fig.update_layout(title_text=figTitle)
-        #return fig.to_html(include_plotlyjs=True, full_html=True)
+        # return fig.to_html(include_plotlyjs=True, full_html=True)
         return HTMLResponse(content=fig.to_html(include_plotlyjs=True, full_html=True), status_code=200)
     else:
         # return fig.to_html(include_plotlyjs=False, full_html=False)
