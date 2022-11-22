@@ -33,13 +33,13 @@ async def comparison_plot():
 
     wpplinks = []
     for index, item in enumerate((experimentsT.loc[pcDf[prm.EXP_C], prm.LAB_C])):
-        wpplinks.append('<a href="/dap_out_infograph?wpp=' + str(pcDf['exp_id'][index]) + '">' + item + '</a>')
+        wpplinks.append('<a href="/dap/dap_out_infograph?wpp=' + str(pcDf['exp_id'][index]) + '">' + item + '</a>')
         #print(item)
     pcDf['wpp'] = wpplinks
 
     scenlinks = []
     for index, item in enumerate((scenariosT.loc[pcDf[prm.SCEN_C], prm.LAB_C])):
-        scenlinks.append('<a href="/dap_scenarios?scen=' + str(pcDf['scen_id'][index]) + '">' + item + '</a>')
+        scenlinks.append('<a href="/dap/dap_scenarios?scen=' + str(pcDf['scen_id'][index]) + '">' + item + '</a>')
         #print(item)
     pcDf['scenario'] = scenlinks
 
