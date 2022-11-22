@@ -28,14 +28,66 @@ async def comparison_plot():
     dfPlot = pd.read_sql(sql_q, con=pg_engine)
     pcDf = dfPlot.drop(columns=[prm.TIME_START_C, prm.TIME_END_C, prm.LAB_C]).set_index([prm.EXP_C, prm.SCEN_C]).pivot(
         columns=prm.ITEM_C).droplevel(0, axis=1).reset_index()
+
+   # print(pcDf)
+
+    wpplinks = []
+    for index, item in enumerate((experimentsT.loc[pcDf[prm.EXP_C], prm.LAB_C])):
+        wpplinks.append('<a href="/dap_out_infograph?wpp=' + str(pcDf['exp_id'][index]) + '">' + item + '</a>')
+        #print(item)
+    pcDf['wpp'] = wpplinks
+
+    scenlinks = []
+    for index, item in enumerate((scenariosT.loc[pcDf[prm.SCEN_C], prm.LAB_C])):
+        scenlinks.append('<a href="/dap_scenarios?scen=' + str(pcDf['scen_id'][index]) + '">' + item + '</a>')
+        #print(item)
+    pcDf['scenario'] = scenlinks
+
+
     pcDf['WPP'] = (experimentsT.loc[pcDf[prm.EXP_C], prm.LAB_C]).values
     pcDf['Scenario'] = (scenariosT.loc[pcDf[prm.SCEN_C], prm.LAB_C]).values
+
     pcDf.rename(
         columns={115: 'Irrigation def.', 121: 'Drinking Water def.', 122: 'Distribution Costs', 123: 'Industrial def.'},
         inplace=True)
+
+    print(pcDf)
+
     pcDf.drop(columns=[prm.EXP_C, prm.SCEN_C], inplace=True)
-    # pcHTML = hip.Experiment.from_dataframe(pcDf).to_html(os.path.join(prm.IMGDIR, 'comparisonPC.html'))
+
     pcHTML = hip.Experiment.from_dataframe(pcDf)
+
+    # https://facebookresearch.github.io/hiplot/experiment_settings.html#frontendrenderingsettings
+    # Provide configuration for the table with all the rows
+    pcHTML.display_data(hip.Displays.TABLE).update({
+        # Don't display `uid` and `from_uid` columns to the user
+        'hide': ['uid', 'from_uid', 'WPP', 'Scenario'],
+        # In the table, order rows by default
+        # 'order_by': [['pct_success', 'desc']],
+        # Specify the order for columns
+        # 'order': ['time'],  # Put column time first on the left
+    })
+    # Provide configuration for the parallel plot
+    pcHTML.display_data(hip.Displays.PARALLEL_PLOT).update({
+        # Hide some columns in the parallel plot
+        'hide': ['wpp', 'scenario'],
+        # Specify the order for others
+        #'order': ['time'],  # Put column time first on the left
+    })
+    # Provide configuration for the XY graph
+    #exp.display_data(hip.Displays.XY).update({
+    #    # Default X axis for the XY plot
+    #    'axis_x': 'time',
+    #    # Default Y axis
+    #    'axis_y': 'lr',
+    #    # Configure lines
+    #    'lines_thickness': 1.0,
+    #    'lines_opacity': 0.1,
+    #    # Configure dots
+    #    'dots_thickness': 2.0,
+    #    'dots_opacity': 0.3,
+    #})
+
     # return pcHTML
     return HTMLResponse(pcHTML.to_html(), status_code=200)
 
