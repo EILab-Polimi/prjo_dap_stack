@@ -168,7 +168,8 @@ async def cyclost_lineplot(plot_id: str,
     scenariosT = pd.read_sql(param.SCEN_T, con=pg_engine).set_index(param.ID_C)
     experimentsT = pd.read_sql(param.EXP_T, con=pg_engine).set_index(param.ID_C)
 
-    places_labels = placesT.loc[item_place_df[param.PLACE_C], param.DESCR_C]
+    # places_labels = placesT.loc[item_place_df[param.PLACE_C], param.DESCR_C]
+    places_labels = placesT.loc[places, param.DESCR_C]
     unit_labels = catalogT.loc[item_place_df[param.ID_C], param.UOM_C]
     figTitle = catalogT.loc[item_place_df[param.ID_C], param.DESCR_C].iloc[0].title()
     figLabel = catalogT.loc[item_place_df[param.ID_C], param.TYPE_C].iloc[0]
