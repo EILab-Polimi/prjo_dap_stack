@@ -37,7 +37,7 @@ Post installation - contributed modules
 
 - postgres - taken form postgres:14.1 image (https://hub.docker.com/layers/library/postgres/14.1/images/sha256-043c256b5dc621860539d8036d906eaaef1bdfa69a0344b4509b483205f14e63?context=explore) is used to host the drupal database, used for internal drupal functionality and the postgis extended prjo_dap database collecting the data used for graps and qgis projects data
 - drupal - taken from drupal:9-apache image (https://hub.docker.com/layers/library/drupal/9-apache/images/sha256-4d6912ce1e909381212d88a8d478939b5e8701713624cc84c2ddad9af8a1feea?context=explore)
-  which provide the web server and drupal CMS for the UCP platform.
+  which provide the web server and drupal CMS for the DAP platform.
 - fastapi - starting from a python:3.8 image (https://hub.docker.com/layers/library/python/3.8/images/sha256-bb2a37b016b169c2d65f4203e15e855f77261353011810c18f2e6a080e2539e0?context=explore) we realized a fastAPI application (https://fastapi.tiangolo.com/) to serve graphs. The advantage to use fastAPI is we can browse and test the api results using the integrated swagger interfce (https://fastapi.tiangolo.com/features/#automatic-docs).
 - qgis-server - taken from camptocamp/qgis-server:3.22 image (https://hub.docker.com/layers/camptocamp/qgis-server/3.22/images/sha256-76581170643935f0f53d4f59af4e25923d894c7e8c17c1ff702f0917a5cb33e9?context=explore)
 implement a full qgis server version 3.22 (https://docs.qgis.org/3.22/en/docs/)
