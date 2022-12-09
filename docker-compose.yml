@@ -23,7 +23,7 @@ services:
       dockerfile: services/postgres/Dockerfile
     environment:
       POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: 7NzCLS7C2fJCntT
+      POSTGRES_PASSWORD: SETYOURPASSWORD
       POSTGRES_DB: postgres
     ports:
       - 5433:5432
@@ -51,8 +51,8 @@ services:
     ports:
       - '5050:80'
     environment:
-      PGADMIN_DEFAULT_EMAIL: pisewip@gmail.com
-      PGADMIN_DEFAULT_PASSWORD: 7NzCLS7C2fJCntT
+      PGADMIN_DEFAULT_EMAIL: SETYOURMAIL
+      PGADMIN_DEFAULT_PASSWORD: SETYOURPASSWORD
     # links:
     #   - postgis
     restart: always
